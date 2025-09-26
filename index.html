@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>給与申請ツール</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+  body {
+    margin: 0;
+    background: #1a1c23;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: #fff;
+  }
+
+  button, input, textarea {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+  }
+
+  .app-container {
+    padding: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin: 12px 0 40px;
+  }
+
+  .step-pill {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+
+  .step-pill button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 20px;
+    margin: 0 5px;
+    background: #e5e5ea;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .step-pill button.active {
+    background: #635bff;
+    color: white;
+  }
+
+  /* Label */
+  .form-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Input with icon */
+  .input-with-icon {
+    position: relative;
+    width: 100%;
+  }
+
+  .input-with-icon i {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-74%);
+    color: #aaa;
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  /* Special rule for recipientEmail with icon */
+  .input-with-icon input {
+    width: 100%;
+    padding: 12px 12px 12px 44px; /* leave room for icon */
+    font-size: 16px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    background-color: #2A2D3A;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  /* Normal inputs (others) */
+  input[type="text"]:not(#recipientEmail),
+  input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    box-sizing: border-box;
+    background-color: #2A2D3A;  
+    color: #FFFFFF;    
+    font-weight: 600;
+  }
+
+  .row-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 2px;
+  }
+
+  .row-wrapper input {
+    flex: 1;
+    height: 36px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+
+  .row-wrapper input:nth-child(1) { flex: 0.7; } /* 日付 */
+  .row-wrapper input:nth-child(2) { flex: 1.5; } /* 勤務時間 */
+  .row-wrapper input:nth-child(3) { flex: 1; }   /* 休憩時間 */
+
+  .row-wrapper .delete-row {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    color: #e5e5ea;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    transform: translateY(-6px);
+  }
+
+  .row-wrapper .delete-row i {
+    line-height: 36px;
+    font-size: 20px;
+    vertical-align: middle;
+    display: block;
+  }
+
+  .row-wrapper .delete-row:active {
+    transform: scale(0.9);
+  }
+
+  .add-row {
+    display: block;
+    margin: 6px auto 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .mail-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 999px;
+    background: #635bff;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 20px;
+  }
+
+  /* Top inputs */
+  .top-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .top-row input {
+    flex: 1;
+  }
+</style>
+</head>
+<body>
+<div class="app-container">
+  <h1>給与申請システム</h1>
+
+  <div class="step-pill">
+    <button id="preBtn" class="active">事前申請</button>
+    <button id="mainBtn">本申請</button>
+  </div>
+
+  <!-- New 送信先 input above top row -->
+  <div class="form-group">
+    <div class="input-with-icon">
+      <i class="bi bi-envelope-fill"></i>
+      <input type="email" id="recipientEmail" placeholder="送信先">
+    </div>
+  </div>
+
+  <!-- Top row: 振り込み日 and 氏名 -->
+  <div class="top-row">
+    <input type="text" id="transferDate" placeholder="振り込み日">
+    <input type="text" id="employeeName" placeholder="氏名">
+  </div>
+
+  <!-- クライアント名 input below top row -->
+  <input type="text" id="clientName" placeholder="クライアント名">
+
+  <div id="workRows">
+    <div class="row-wrapper">
+      <input type="text" placeholder="日付">
+      <input type="text" placeholder="勤務時間">
+      <input type="text" placeholder="休憩時間">
+      <button class="delete-row"><i class="bi bi-x-circle-fill"></i></button>
+    </div>
+  </div>
+
+  <button class="add-row" id="addRow">
+    <i class="bi bi-plus-circle-fill" style="font-size:40px; color:#635bff;"></i>
+  </button>
+
+  <input type="text" id="transport" placeholder="交通費">
+  <input type="text" id="route" placeholder="経路">
+
+  <button class="mail-btn" id="sendMail">メール送信</button>
+</div>
+
+<script>
+let 申請Type = "事前申請";
+
+// IndexedDB setup
+let db;
+const request = indexedDB.open("SalaryAppDB", 1);
+
+request.onupgradeneeded = function(event) {
+  db = event.target.result;
+  const store = db.createObjectStore("userData", { keyPath: "id" });
+};
+
+request.onsuccess = function(event) {
+  db = event.target.result;
+  loadUserData();
+};
+
+request.onerror = function(event) {
+  console.error("IndexedDB error:", event.target.errorCode);
+};
+
+// Save function
+function saveUserData() {
+  if (!db) return;
+  const transaction = db.transaction(["userData"], "readwrite");
+  const store = transaction.objectStore("userData");
+  store.put({
+    id: 1,
+    recipient: document.getElementById("recipientEmail").value,
+    name: document.getElementById("employeeName").value,
+    client: document.getElementById("clientName").value,
+    transport: document.getElementById("transport").value,
+    route: document.getElementById("route").value
+  });
+}
+
+// Load function
+function loadUserData() {
+  if (!db) return;
+  const transaction = db.transaction(["userData"], "readonly");
+  const store = transaction.objectStore("userData");
+  const getRequest = store.get(1);
+
+  getRequest.onsuccess = function() {
+    if (getRequest.result) {
+      document.getElementById("recipientEmail").value = getRequest.result.recipient || "";
+      document.getElementById("employeeName").value = getRequest.result.name || "";
+      document.getElementById("clientName").value = getRequest.result.client || "";
+      document.getElementById("transport").value = getRequest.result.transport || "";
+      document.getElementById("route").value = getRequest.result.route || "";
+    }
+  };
+}
+
+// Auto-save on input
+document.getElementById("recipientEmail").addEventListener("input", saveUserData);
+document.getElementById("employeeName").addEventListener("input", saveUserData);
+document.getElementById("clientName").addEventListener("input", saveUserData);
+document.getElementById("transport").addEventListener("input", saveUserData);
+document.getElementById("route").addEventListener("input", saveUserData);
+
+// Step buttons
+document.getElementById("preBtn").addEventListener("click", () => {
+  申請Type = "事前申請";
+  document.getElementById("preBtn").classList.add("active");
+  document.getElementById("mainBtn").classList.remove("active");
+});
+
+document.getElementById("mainBtn").addEventListener("click", () => {
+  申請Type = "本申請";
+  document.getElementById("mainBtn").classList.add("active");
+  document.getElementById("preBtn").classList.remove("active");
+});
+
+// Work rows
+const workRows = document.getElementById("workRows");
+
+function createRow(date='', time='', brk='') {
+  const div = document.createElement("div");
+  div.classList.add("row-wrapper");
+  div.innerHTML = `
+    <input type="text" placeholder="日付" value="${date}">
+    <input type="text" placeholder="勤務時間" value="${time}">
+    <input type="text" placeholder="休憩時間" value="${brk}">
+    <button class="delete-row"><i class="bi bi-x-circle-fill"></i></button>
+  `;
+  workRows.appendChild(div);
+
+  const deleteBtn = div.querySelector(".delete-row");
+  deleteBtn.addEventListener("click", () => div.remove());
+}
+
+document.getElementById("addRow").addEventListener("click", () => createRow());
+
+// Send mail
+document.getElementById("sendMail").addEventListener("click", () => {
+  const recipient = document.getElementById("recipientEmail").value || "hibarai@impact-jinzai.com";
+  const transferDate = document.getElementById("transferDate").value;
+  const employeeName = document.getElementById("employeeName").value;
+  const clientName = document.getElementById("clientName").value;
+  const transport = document.getElementById("transport").value;
+  const route = document.getElementById("route").value;
+
+  const rows = [...workRows.querySelectorAll(".row-wrapper")].map(r => {
+    const inputs = r.querySelectorAll("input");
+    return { date: inputs[0].value, time: inputs[1].value, break: inputs[2].value };
+  });
+
+  const dates = rows.map(r => r.date).join("\n");
+  const times = rows.map(r => `${r.date} ${r.time}`).join("\n");
+  const breaks = rows.map(r => `${r.date} ${r.break}`).join("\n");
+
+  const body = 
+`振り込み日: ${transferDate}
+
+氏名: ${employeeName}
+
+クライアント名: 
+${clientName}
+
+就業日:
+${dates}
+
+業務内容: 倉庫内作業
+
+作業時間:
+${times}
+
+休憩:
+${breaks}
+
+交通費: ${transport}
+
+ルート:
+${route}`;
+
+  const subject = (申請Type === "事前申請") ? "翌営業日払い: 事前申請" : "翌営業日払い申請";
+  const mailto = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailto;
+});
+</script>
+</body>
+</html>
