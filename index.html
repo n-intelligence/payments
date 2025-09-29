@@ -347,8 +347,12 @@ document.getElementById("sendMail").addEventListener("click", () => {
   const times = rows.map(r => `${r.date} ${r.time}`).join("\n");
   const breaks = rows.map(r => `${r.date} ${r.break}`).join("\n");
 
+  // Count rows for "(◯勤務分をまとめて)"
+  const rowCount = rows.filter(r => r.date.trim() !== "").length;
+  const furikomiSuffix = rowCount > 1 ? ` (${rowCount}勤務分をまとめて)` : "";
+
   const body = 
-`振り込み日: ${transferDate}
+`振り込み日: ${transferDate}${furikomiSuffix}
 
 氏名: ${employeeName}
 
