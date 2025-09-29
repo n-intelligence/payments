@@ -6,6 +6,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 <style>
+  /* ================== Splash screen styles ================== */
+  #splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #1A1C23;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+
+  #splash-logo {
+    max-width: 60%;
+    max-height: 60%;
+  }
+
+  #splash.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ================== Existing styles ================== */
   body {
     margin: 0;
     background: #1a1c23;
@@ -80,10 +107,9 @@
     pointer-events: none;
   }
 
-  /* Special rule for recipientEmail with icon */
   .input-with-icon input {
     width: 100%;
-    padding: 12px 12px 12px 44px; /* leave room for icon */
+    padding: 12px 12px 12px 44px;
     font-size: 16px;
     border-radius: 10px;
     margin-bottom: 14px;
@@ -95,7 +121,6 @@
     box-sizing: border-box;
   }
 
-  /* Normal inputs (others) */
   input[type="text"]:not(#recipientEmail),
   input[type="number"] {
     width: 100%;
@@ -125,9 +150,9 @@
     box-sizing: border-box;
   }
 
-  .row-wrapper input:nth-child(1) { flex: 0.7; } /* 日付 */
-  .row-wrapper input:nth-child(2) { flex: 1.5; } /* 勤務時間 */
-  .row-wrapper input:nth-child(3) { flex: 1; }   /* 休憩時間 */
+  .row-wrapper input:nth-child(1) { flex: 0.7; }
+  .row-wrapper input:nth-child(2) { flex: 1.5; }
+  .row-wrapper input:nth-child(3) { flex: 1; }
 
   .row-wrapper .delete-row {
     width: 36px;
@@ -179,18 +204,20 @@
     margin-top: 20px;
   }
 
-  /* Top inputs */
   .top-row {
     display: flex;
     gap: 8px;
     margin-bottom: 14px;
   }
-  .top-row input {
-    flex: 1;
-  }
+  .top-row input { flex: 1; }
 </style>
 </head>
 <body>
+<!-- ================== Splash screen ================== -->
+<div id="splash">
+  <img src="logo.png" alt="Logo" id="splash-logo">
+</div>
+
 <div class="app-container">
   <h1>給与申請システム</h1>
 
@@ -199,7 +226,6 @@
     <button id="mainBtn">本申請</button>
   </div>
 
-  <!-- New 送信先 input above top row -->
   <div class="form-group">
     <div class="input-with-icon">
       <i class="bi bi-envelope-fill"></i>
@@ -207,13 +233,11 @@
     </div>
   </div>
 
-  <!-- Top row: 振り込み日 and 氏名 -->
   <div class="top-row">
     <input type="text" id="transferDate" placeholder="振り込み日">
     <input type="text" id="employeeName" placeholder="氏名">
   </div>
 
-  <!-- クライアント名 input below top row -->
   <input type="text" id="clientName" placeholder="クライアント名">
 
   <div id="workRows">
@@ -238,13 +262,32 @@
 <script>
 let 申請Type = "事前申請";
 
-// IndexedDB setup
+// ================== Splash screen logic ==================
+window.addEventListener("load", () => {
+  const splash = document.getElementById("splash");
+  const minTime = 1000; // 1 second minimum
+  const start = Date.now();
+
+  const fadeOut = () => {
+    splash.classList.add("fade-out");
+    setTimeout(() => splash.remove(), 500);
+  };
+
+  const elapsed = Date.now() - start;
+  if (elapsed >= minTime) {
+    fadeOut();
+  } else {
+    setTimeout(fadeOut, minTime - elapsed);
+  }
+});
+
+// ================== IndexedDB setup ==================
 let db;
 const request = indexedDB.open("SalaryAppDB", 1);
 
 request.onupgradeneeded = function(event) {
   db = event.target.result;
-  const store = db.createObjectStore("userData", { keyPath: "id" });
+  db.createObjectStore("userData", { keyPath: "id" });
 };
 
 request.onsuccess = function(event) {
@@ -256,7 +299,7 @@ request.onerror = function(event) {
   console.error("IndexedDB error:", event.target.errorCode);
 };
 
-// Save function
+// Save/load user data
 function saveUserData() {
   if (!db) return;
   const transaction = db.transaction(["userData"], "readwrite");
@@ -271,7 +314,6 @@ function saveUserData() {
   });
 }
 
-// Load function
 function loadUserData() {
   if (!db) return;
   const transaction = db.transaction(["userData"], "readonly");
@@ -289,12 +331,10 @@ function loadUserData() {
   };
 }
 
-// Auto-save on input
-document.getElementById("recipientEmail").addEventListener("input", saveUserData);
-document.getElementById("employeeName").addEventListener("input", saveUserData);
-document.getElementById("clientName").addEventListener("input", saveUserData);
-document.getElementById("transport").addEventListener("input", saveUserData);
-document.getElementById("route").addEventListener("input", saveUserData);
+// Auto-save
+["recipientEmail","employeeName","clientName","transport","route"].forEach(id => {
+  document.getElementById(id).addEventListener("input", saveUserData);
+});
 
 // Step buttons
 document.getElementById("preBtn").addEventListener("click", () => {
@@ -323,8 +363,7 @@ function createRow(date='', time='', brk='') {
   `;
   workRows.appendChild(div);
 
-  const deleteBtn = div.querySelector(".delete-row");
-  deleteBtn.addEventListener("click", () => handleDeleteRow(div));
+  div.querySelector(".delete-row").addEventListener("click", () => handleDeleteRow(div));
 }
 
 // Attach delete to initial row
@@ -339,7 +378,6 @@ function handleDeleteRow(row) {
   if (allRows.length > 1) {
     row.remove();
   } else {
-    // Only 1 row left → clear inputs
     row.querySelectorAll("input").forEach(input => input.value = "");
   }
 }
@@ -364,7 +402,6 @@ document.getElementById("sendMail").addEventListener("click", () => {
   const times = rows.map(r => `${r.date} ${r.time}`).join("\n");
   const breaks = rows.map(r => `${r.date} ${r.break}`).join("\n");
 
-  // Count rows for "(◯勤務分をまとめて)"
   const rowCount = rows.filter(r => r.date.trim() !== "").length;
   const furikomiSuffix = rowCount > 1 ? ` (${rowCount}勤務分をまとめて)` : "";
 
