@@ -324,7 +324,24 @@ function createRow(date='', time='', brk='') {
   workRows.appendChild(div);
 
   const deleteBtn = div.querySelector(".delete-row");
-  deleteBtn.addEventListener("click", () => div.remove());
+  deleteBtn.addEventListener("click", () => handleDeleteRow(div));
+}
+
+// Attach delete to initial row
+document.querySelectorAll(".delete-row").forEach(btn => {
+  const row = btn.closest(".row-wrapper");
+  btn.addEventListener("click", () => handleDeleteRow(row));
+});
+
+// Delete row logic
+function handleDeleteRow(row) {
+  const allRows = workRows.querySelectorAll(".row-wrapper");
+  if (allRows.length > 1) {
+    row.remove();
+  } else {
+    // Only 1 row left → clear inputs
+    row.querySelectorAll("input").forEach(input => input.value = "");
+  }
 }
 
 document.getElementById("addRow").addEventListener("click", () => createRow());
