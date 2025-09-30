@@ -191,18 +191,25 @@
   }
 
   .mail-btn {
-    display: block;
-    width: 100%;
-    padding: 16px;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 999px;
-    background: #635bff;
-    color: white;
-    cursor: pointer;
-    font-weight: 600;
-    margin-top: 20px;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 999px;
+  background: #635bff;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 20px auto 0;
+  width: 100%;
+}
+
+.mail-btn i {
+  margin-right: 8px;
+  font-size: 1.4rem;
+}
 
   .top-row {
     display: flex;
@@ -220,7 +227,7 @@
 </div>
 
 <div class="app-container">
-  <h1>給与申請システム</h1>
+  <h1>給与申請ツール</h1>
 
   <div class="step-pill">
     <button id="preBtn" class="active">事前申請</button>
@@ -257,8 +264,9 @@
   <input type="text" id="transport" placeholder="交通費">
   <input type="text" id="route" placeholder="経路">
 
-  <button class="mail-btn" id="sendMail">メール送信</button>
-</div>
+  <button class="mail-btn" id="sendMail">
+  <i class="bi bi-file-earmark-text-fill"></i> メール作成
+</button>
 
 <script>
 let 申請Type = "事前申請";
