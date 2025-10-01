@@ -60,32 +60,20 @@
   }
 
   /* App container starts hidden above the screen */
-.app-container {
-  padding: 16px;
-  max-width: 480px;
-  margin: 0 auto;
-  transform: translateY(-30px);
+.app-container > * {
   opacity: 0;
-  animation: slideBounceIn 0.7s ease-out forwards;
-  animation-delay: 1s; /* waits until splash finishes */
+  transform: translateY(15px);
+  animation: staggerFadeUp 0.5s ease-out forwards;
 }
 
-@keyframes slideBounceIn {
-  0% {
-    transform: translateY(-30px);
-    opacity: 0;
-  }
-  60% {
-    transform: translateY(8px);
-    opacity: 1;
-  }
-  80% {
-    transform: translateY(-4px);
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.app-container > *:nth-child(1) { animation-delay: 1.0s; }
+.app-container > *:nth-child(2) { animation-delay: 1.1s; }
+.app-container > *:nth-child(3) { animation-delay: 1.2s; }
+/* … keep staggering */
+  
+@keyframes staggerFadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
   h1 {
