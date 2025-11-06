@@ -173,6 +173,22 @@
   }
 }
 
+.top-icon {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  font-size: 28px;
+  color: #fff;
+  cursor: pointer;
+  z-index: 10000; /* above splash & passcode screens */
+  transition: transform 0.2s;
+}
+
+.top-icon:hover {
+  transform: scale(1.2);
+  color: #ffd700; /* optional gold hover effect */
+}
+
   h1 {
     text-align: center;
     font-size: 1.4rem;
@@ -365,6 +381,9 @@
     <p id="passcode-error">Status: Invalid Passcode</p>
   </div>
 </div>
+
+<!-- Top-right stars icon -->
+<i id="starsIcon" class="bi bi-stars top-icon"></i>
 
 <div class="app-container">
   <h1>給与申請ツール</h1>
@@ -648,6 +667,11 @@ ${route}`;
 
   window.location.href = mailto; // only this line
 });
+
+document.getElementById("starsIcon").addEventListener("click", () => {
+  window.location.href = "https://www.example.com"; // replace with your website
+});
+
 </script>
 </body>
 </html>
